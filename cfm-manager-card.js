@@ -1,11 +1,11 @@
 /**
  * CFM Manager Card - Main Class
  *
- * Version: v2.3.0
+ * Version: v2.4.0
  * State Machine: PRE-START → ACTIVE CYCLE → CLOSED
  * Phase 2: Cycle Start Form (COMPLETED)
  * Phase 3: ACTIVE CYCLE Modals (COMPLETED)
- * Phase 3.5: Form improvements (initial_feed_phase dropdown, preview modal)
+ * Phase 4: Form improvements (initial_feed_phase dropdown, preview modal)
  */
 
 class CfmManagerCard extends HTMLElement {
@@ -1588,4 +1588,4 @@ window.customCards.push({
   preview: true
 });
 
-console.log('[CFM Card] v2.3.0 - Card Main loaded successfully (Phase 3.5: Form Preview)');
+console.log('[CFM Card] v2.4.0 - Card Main loaded successfully (Phase 4: Form Preview)');
