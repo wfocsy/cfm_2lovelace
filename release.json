@@ -1,24 +1,18 @@
 {
-  "version": "2.4.1",
+  "version": "2.5.0",
   "release_date": "2025-10-20",
   "changelog": {
     "features": [
-      "CARD_ARCHITECTURE.md részletes kidolgozás - Mind a 6 fázis dokumentálva",
-      "Entitások helyett placeholder-ek (user választja config-ban)",
-      "Service calls dokumentálva (6 db YAML példa)",
-      "Sensor entitások listája (backend + user választott)",
-      "Időigény táblázat (14-18 óra összesen)",
-      "Phase 1 (v2.0.0): Card alapok, state machine ✅",
-      "Phase 2 (v2.1.0): Cycle start form ✅",
-      "Phase 3 (v2.2.0): Active cycle modals ✅",
-      "Source fájlok: card-main.js, card-config.js, card-styles.js",
-      "Build fájlok: v2.0.0, v2.1.0, v2.2.0",
-      "Dokumentáció: QUICK_START.md, TESTING_GUIDE.md, PHASE1_SUMMARY.md"
+      "DEMO MODE - Card működik szenzorok nélkül is!",
+      "demo_state config paraméter (PRE-START, ACTIVE, CLOSED)",
+      "Dummy adatok megjelenítése demo mode-ban",
+      "UI tesztelés lehetséges backend nélkül",
+      "3 állapot kipróbálható azonnal (telepítés után)"
     ],
     "fixes": [],
     "breaking_changes": []
   },
   "minimum_ha_version": "2024.1.0",
-  "phase": "Phase 1-3 COMPLETED - Architecture Documentation",
-  "next_phase": "Phase 4: Automatic Scheduler (Daily Data 07:00)"
+  "phase": "Phase 4: DEMO MODE (COMPLETED)",
+  "next_phase": "Phase 5: Config Editor Bővítés (Entity Pickers)"
 }

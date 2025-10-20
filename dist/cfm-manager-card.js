@@ -1,10 +1,11 @@
 /**
  * CFM Manager Card - Main Class
  *
- * Version: v2.2.0
+ * Version: v2.5.0
  * State Machine: PRE-START → ACTIVE CYCLE → CLOSED
  * Phase 2: Cycle Start Form (COMPLETED)
  * Phase 3: ACTIVE CYCLE Modals (Shipping, Mortality, Close)
+ * Phase 4: DEMO MODE - Display UI without sensors
  */
 
 class CfmManagerCard extends HTMLElement {
@@ -34,7 +35,8 @@ class CfmManagerCard extends HTMLElement {
       manager_id: config.manager_id,
       daily_save_time: config.daily_save_time || '07:00',
       show_notifications: config.show_notifications !== false,
-      show_debug: config.show_debug || false
+      show_debug: config.show_debug || false,
+      demo_state: config.demo_state || null // 'PRE-START', 'ACTIVE', 'CLOSED', null
     };
 
     this._render();
@@ -55,6 +57,15 @@ class CfmManagerCard extends HTMLElement {
    * @returns {string} - Current state (PRE-START, ACTIVE, CLOSED, UNKNOWN)
    */
   _updateState() {
+    // DEMO MODE: Force state if demo_state is set
+    if (this._config.demo_state) {
+      this._currentState = this._config.demo_state;
+      if (this._config.show_debug) {
+        console.log(`[CFM Card] DEMO MODE: Forced state = ${this._currentState}`);
+      }
+      return;
+    }
+
     if (!this._hass || !this._config.manager_id) {
       this._currentState = 'UNKNOWN';
       return;
@@ -89,11 +100,32 @@ class CfmManagerCard extends HTMLElement {
   }
 
   /**
-   * Get sensor value from Home Assistant
+   * Get sensor value from Home Assistant (or dummy data in demo mode)
    * @param {string} entity_id - Sensor entity ID
    * @returns {string|null} - Sensor value or null
    */
   _getSensorValue(entity_id) {
+    // DEMO MODE: Return dummy data
+    if (this._config.demo_state) {
+      const dummyData = {
+        'cycle_id': 'MSZ/2025/001',
+        'cycle_age': '15',
+        'current_stock': '4975',
+        'breed_name': 'Ross 308 vegyesivar',
+        'fcr': '1.85',
+        'total_mortality': '25 (0.5%)',
+        'cycle_duration': '42',
+        'final_stock': '4500',
+        'final_weight': '3200',
+        'final_fcr': '1.92',
+        'total_shipped': '4500'
+      };
+
+      // Extract last part of entity_id (e.g., 'cycle_age' from 'sensor.manager_1_cycle_age')
+      const key = entity_id.split('_').slice(3).join('_');
+      return dummyData[key] || 'N/A';
+    }
+
     if (!this._hass || !entity_id) return null;
 
     const entity = this._hass.states[entity_id];
