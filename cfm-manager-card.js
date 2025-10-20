@@ -1,10 +1,11 @@
 /**
  * CFM Manager Card - Main Class
  *
- * Version: v2.2.0
+ * Version: v2.3.0
  * State Machine: PRE-START → ACTIVE CYCLE → CLOSED
  * Phase 2: Cycle Start Form (COMPLETED)
- * Phase 3: ACTIVE CYCLE Modals (Shipping, Mortality, Close)
+ * Phase 3: ACTIVE CYCLE Modals (COMPLETED)
+ * Phase 3.5: Form improvements (initial_feed_phase dropdown, preview modal)
  */
 
 class CfmManagerCard extends HTMLElement {
@@ -15,6 +16,7 @@ class CfmManagerCard extends HTMLElement {
     this._hass = null;
     this._currentState = 'UNKNOWN';
     this._showStartForm = false;
+    this._showStartPreview = false;
     this._showShippingModal = false;
     this._showMortalityModal = false;
     this._showCloseConfirm = false;
@@ -158,6 +160,10 @@ class CfmManagerCard extends HTMLElement {
    * Render PRE-START state (Várakozó)
    */
   _renderPreStart(managerName) {
+    if (this._showStartPreview) {
+      return this._renderStartPreview(managerName);
+    }
+
     if (this._showStartForm) {
       return this._renderStartForm(managerName);
     }
@@ -217,6 +223,23 @@ class CfmManagerCard extends HTMLElement {
               <input type="number" id="settlement_age_days" value="0" min="0" />
               <span class="form-hint">0 = naposcsibe</span>
             </div>
+
+            <div class="form-group">
+              <label>Kezdő takarmány fázis: *</label>
+              <select id="initial_feed_phase" required>
+                <option value="1" selected>Fázis 1 - Starter</option>
+                <option value="2">Fázis 2 - Grower</option>
+                <option value="3">Fázis 3 - Finisher</option>
+                <option value="4">Fázis 4 - Withdrawal 1</option>
+                <option value="5">Fázis 5 - Withdrawal 2</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Kezdő takarmány készlet (kg):</label>
+              <input type="number" id="initial_feed_amount" value="0" min="0" step="0.1" />
+              <span class="form-hint">Első beszállítás mennyisége</span>
+            </div>
           </div>
 
           <!-- TAKARMÁNY ÁRAK -->
@@ -258,14 +281,9 @@ class CfmManagerCard extends HTMLElement {
             <h3>További beállítások</h3>
 
             <div class="form-group">
-              <label>Kezdeti takarmány készlet (kg):</label>
-              <input type="number" id="initial_feed_amount" value="0" min="0" step="0.1" />
-            </div>
-
-            <div class="form-group">
-              <label>Hiányzó elhullások száma:</label>
+              <label>Elmaradt elhullások száma:</label>
               <input type="number" id="missed_mortality_count" value="0" min="0" />
-              <span class="form-hint">Korábbi, nem regisztrált elhullások pótlása</span>
+              <span class="form-hint">Ha nem azonos az indítási nap és betelepítési nap</span>
             </div>
           </div>
 
@@ -274,8 +292,8 @@ class CfmManagerCard extends HTMLElement {
             <button type="button" class="secondary-button" onclick="this.getRootNode().host._toggleStartForm()">
               ❌ Mégsem
             </button>
-            <button type="submit" class="primary-button" onclick="event.preventDefault(); this.getRootNode().host._submitStartForm();">
-              ✅ CIKLUS INDÍTÁS
+            <button type="button" class="primary-button" onclick="this.getRootNode().host._showPreview();">
+              👁️ Előnézet
             </button>
           </div>
         </form>
@@ -461,11 +479,229 @@ class CfmManagerCard extends HTMLElement {
    */
   _toggleStartForm() {
     this._showStartForm = !this._showStartForm;
+    this._showStartPreview = false;
     this._render();
   }
 
   /**
-   * Submit Cycle Start Form
+   * Show Preview Modal (Phase 3.5)
+   */
+  _showPreview() {
+    if (!this.shadowRoot) return;
+
+    // Collect form data for preview
+    this._formData = {
+      cycle_id: this.shadowRoot.getElementById('cycle_id').value || '(automatikus)',
+      settled_count: parseInt(this.shadowRoot.getElementById('settled_count').value) || 0,
+      settlement_date: this.shadowRoot.getElementById('settlement_date').value,
+      settlement_age_days: parseInt(this.shadowRoot.getElementById('settlement_age_days').value) || 0,
+      initial_feed_phase: this.shadowRoot.getElementById('initial_feed_phase').value,
+      initial_feed_amount: parseFloat(this.shadowRoot.getElementById('initial_feed_amount').value) || 0.0,
+      feed_phase1_price: parseFloat(this.shadowRoot.getElementById('feed_phase1_price').value) || 0.0,
+      feed_phase2_price: parseFloat(this.shadowRoot.getElementById('feed_phase2_price').value) || 0.0,
+      feed_phase3_price: parseFloat(this.shadowRoot.getElementById('feed_phase3_price').value) || 0.0,
+      feed_phase4_price: parseFloat(this.shadowRoot.getElementById('feed_phase4_price').value) || 0.0,
+      feed_phase5_price: parseFloat(this.shadowRoot.getElementById('feed_phase5_price').value) || 0.0,
+      missed_mortality_count: parseInt(this.shadowRoot.getElementById('missed_mortality_count').value) || 0
+    };
+
+    // Validation
+    if (!this._formData.settled_count || this._formData.settled_count < 1) {
+      this._showNotification('Hiba: A betelepített madarak száma kötelező!', 'error');
+      return;
+    }
+
+    if (!this._formData.settlement_date) {
+      this._showNotification('Hiba: A betelepítés dátuma kötelező!', 'error');
+      return;
+    }
+
+    // Show preview modal
+    this._showStartForm = false;
+    this._showStartPreview = true;
+    this._render();
+  }
+
+  /**
+   * Render Start Preview Modal (Phase 3.5)
+   */
+  _renderStartPreview(managerName) {
+    const feedPhaseNames = {
+      '1': 'Starter',
+      '2': 'Grower',
+      '3': 'Finisher',
+      '4': 'Withdrawal 1',
+      '5': 'Withdrawal 2'
+    };
+
+    return `
+      <div class="card-content modal-overlay">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>${managerName}</h2>
+            <h3>📋 Ciklus Indítás Előnézet</h3>
+            <p class="modal-subtitle">Ellenőrizd az adatokat indítás előtt</p>
+          </div>
+
+          <div class="preview-content">
+            <div class="preview-section">
+              <h4>Alapadatok</h4>
+              <div class="preview-item">
+                <span class="preview-label">Ciklus ID:</span>
+                <span class="preview-value">${this._formData.cycle_id}</span>
+              </div>
+              <div class="preview-item">
+                <span class="preview-label">Betelepített madarak:</span>
+                <span class="preview-value">${this._formData.settled_count} db</span>
+              </div>
+              <div class="preview-item">
+                <span class="preview-label">Betelepítés dátuma:</span>
+                <span class="preview-value">${this._formData.settlement_date}</span>
+              </div>
+              <div class="preview-item">
+                <span class="preview-label">Betelepítési kor:</span>
+                <span class="preview-value">${this._formData.settlement_age_days} nap</span>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <h4>Takarmány</h4>
+              <div class="preview-item">
+                <span class="preview-label">Kezdő fázis:</span>
+                <span class="preview-value">Fázis ${this._formData.initial_feed_phase} - ${feedPhaseNames[this._formData.initial_feed_phase]}</span>
+              </div>
+              <div class="preview-item">
+                <span class="preview-label">Kezdő készlet:</span>
+                <span class="preview-value">${this._formData.initial_feed_amount} kg</span>
+              </div>
+            </div>
+
+            <div class="preview-section">
+              <h4>Takarmány Árak (Ft/kg)</h4>
+              <div class="preview-row">
+                <div class="preview-item-small">
+                  <span class="preview-label">Fázis 1:</span>
+                  <span class="preview-value">${this._formData.feed_phase1_price} Ft</span>
+                </div>
+                <div class="preview-item-small">
+                  <span class="preview-label">Fázis 2:</span>
+                  <span class="preview-value">${this._formData.feed_phase2_price} Ft</span>
+                </div>
+              </div>
+              <div class="preview-row">
+                <div class="preview-item-small">
+                  <span class="preview-label">Fázis 3:</span>
+                  <span class="preview-value">${this._formData.feed_phase3_price} Ft</span>
+                </div>
+                <div class="preview-item-small">
+                  <span class="preview-label">Fázis 4:</span>
+                  <span class="preview-value">${this._formData.feed_phase4_price} Ft</span>
+                </div>
+              </div>
+              <div class="preview-row">
+                <div class="preview-item-small">
+                  <span class="preview-label">Fázis 5:</span>
+                  <span class="preview-value">${this._formData.feed_phase5_price} Ft</span>
+                </div>
+              </div>
+            </div>
+
+            ${this._formData.missed_mortality_count > 0 ? `
+              <div class="preview-section">
+                <h4>További beállítások</h4>
+                <div class="preview-item">
+                  <span class="preview-label">Elmaradt elhullások:</span>
+                  <span class="preview-value">${this._formData.missed_mortality_count} db</span>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" onclick="this.getRootNode().host._cancelPreview()">
+              ⬅️ Vissza
+            </button>
+            <button type="button" class="primary-button" onclick="this.getRootNode().host._confirmStart();">
+              ✅ Ciklus Indítása
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Cancel Preview - Back to Form
+   */
+  _cancelPreview() {
+    this._showStartPreview = false;
+    this._showStartForm = true;
+    this._render();
+  }
+
+  /**
+   * Confirm Start - Submit to Backend
+   */
+  async _confirmStart() {
+    try {
+      // Prepare formData for API (remove display-only fields)
+      const apiData = {
+        cycle_id: this._formData.cycle_id === '(automatikus)' ? null : this._formData.cycle_id,
+        settled_count: this._formData.settled_count,
+        settlement_date: this._formData.settlement_date,
+        settlement_age_days: this._formData.settlement_age_days,
+        initial_feed_phase: this._formData.initial_feed_phase,
+        initial_feed_amount: this._formData.initial_feed_amount,
+        feed_phase1_price: this._formData.feed_phase1_price,
+        feed_phase2_price: this._formData.feed_phase2_price,
+        feed_phase3_price: this._formData.feed_phase3_price,
+        feed_phase4_price: this._formData.feed_phase4_price,
+        feed_phase5_price: this._formData.feed_phase5_price,
+        missed_mortality_count: this._formData.missed_mortality_count
+      };
+
+      // API call to backend
+      const managerId = this._config.manager_id;
+      const apiUrl = `/api/cycle-management/managers/${managerId}/start-cycle`;
+
+      if (this._config.show_debug) {
+        console.log('[CFM Card] Starting cycle:', apiData);
+        console.log('[CFM Card] API URL:', apiUrl);
+      }
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(apiData)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        this._showNotification(`Ciklus sikeresen indítva: ${result.cycle_id}`, 'success');
+        this._showStartPreview = false;
+        this._showStartForm = false;
+        this._render();
+
+        // Trigger HA state refresh
+        if (this._hass) {
+          this._hass.callService('homeassistant', 'update_entity', {
+            entity_id: `sensor.manager_${managerId}_cycle_status`
+          });
+        }
+      } else {
+        this._showNotification(`Hiba: ${result.message || 'Ismeretlen hiba történt'}`, 'error');
+      }
+    } catch (error) {
+      console.error('[CFM Card] Start cycle error:', error);
+      this._showNotification(`Hiba: ${error.message}`, 'error');
+    }
+  }
+
+  /**
+   * Submit Cycle Start Form (DEPRECATED - use _showPreview instead)
    */
   async _submitStartForm() {
     if (!this.shadowRoot) return;
@@ -479,6 +715,7 @@ class CfmManagerCard extends HTMLElement {
       settled_count: parseInt(this.shadowRoot.getElementById('settled_count').value),
       settlement_date: this.shadowRoot.getElementById('settlement_date').value,
       settlement_age_days: parseInt(this.shadowRoot.getElementById('settlement_age_days').value) || 0,
+      initial_feed_phase: this.shadowRoot.getElementById('initial_feed_phase').value,
       initial_feed_amount: parseFloat(this.shadowRoot.getElementById('initial_feed_amount').value) || 0.0,
       feed_phase1_price: parseFloat(this.shadowRoot.getElementById('feed_phase1_price').value) || 0.0,
       feed_phase2_price: parseFloat(this.shadowRoot.getElementById('feed_phase2_price').value) || 0.0,
@@ -1226,6 +1463,83 @@ class CfmManagerCard extends HTMLElement {
           padding: 8px;
         }
       }
+
+      /* Preview Modal styles (Phase 3.5) */
+      .preview-content {
+        padding: 20px;
+      }
+
+      .preview-section {
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .preview-section:last-child {
+        border-bottom: none;
+      }
+
+      .preview-section h4 {
+        margin: 0 0 12px 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .preview-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+      }
+
+      .preview-label {
+        font-size: 14px;
+        color: #666;
+        font-weight: 500;
+      }
+
+      .preview-value {
+        font-size: 14px;
+        color: #111;
+        font-weight: 600;
+      }
+
+      .preview-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 8px;
+      }
+
+      .preview-item-small {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .preview-item-small .preview-label {
+        font-size: 13px;
+      }
+
+      .preview-item-small .preview-value {
+        font-size: 14px;
+      }
+
+      select {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: inherit;
+        background-color: white;
+        cursor: pointer;
+      }
+
+      select:focus {
+        outline: none;
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+      }
     `;
   }
 
@@ -1246,7 +1560,7 @@ class CfmManagerCard extends HTMLElement {
    */
   getCardSize() {
     // Dynamic size based on state and modal visibility
-    if (this._showStartForm || this._showShippingModal || this._showMortalityModal || this._showCloseConfirm) {
+    if (this._showStartForm || this._showStartPreview || this._showShippingModal || this._showMortalityModal || this._showCloseConfirm) {
       return 12;  // Large card for forms/modals
     }
 
@@ -1274,4 +1588,4 @@ window.customCards.push({
   preview: true
 });
 
-console.log('[CFM Card] v2.2.0 - Card Main loaded successfully (Phase 3: ACTIVE Modals)');
+console.log('[CFM Card] v2.3.0 - Card Main loaded successfully (Phase 3.5: Form Preview)');
