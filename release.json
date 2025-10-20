@@ -1,5 +1,5 @@
 {
-  "version": "2.5.2",
+  "version": "2.5.3",
   "release_date": "2025-10-20",
   "changelog": {
     "features": [
@@ -10,10 +10,10 @@
       "3 állapot kipróbálható azonnal (telepítés után)"
     ],
     "fixes": [
+      "Shipping modal egyszerűsítés - átlagsúly mező eltávolítva",
       "HOTFIX: Végtelen render loop javítva (villogó gombok)",
       "hass setter optimalizálás - csak változás esetén renderel",
-      "dist/ mappa tisztítás - verziózott fájlok eltávolítva",
-      "HACS cache probléma javítása"
+      "dist/ mappa tisztítás - verziózott fájlok eltávolítva"
     ],
     "breaking_changes": []
   },

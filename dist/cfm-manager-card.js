@@ -1,13 +1,14 @@
 /**
  * CFM Manager Card - Main Class
  *
- * Version: v2.5.2
+ * Version: v2.5.3
  * State Machine: PRE-START → ACTIVE CYCLE → CLOSED
  * Phase 2: Cycle Start Form (COMPLETED)
  * Phase 3: ACTIVE CYCLE Modals (Shipping, Mortality, Close)
  * Phase 4: DEMO MODE - Display UI without sensors
  *
  * HOTFIX v2.5.2: Infinite render loop fixed (hass setter optimization)
+ * v2.5.3: Shipping modal - átlagsúly mező eltávolítva
  */
 
 class CfmManagerCard extends HTMLElement {
@@ -657,12 +658,6 @@ class CfmManagerCard extends HTMLElement {
             </div>
 
             <div class="form-group">
-              <label>Átlagsúly (g):</label>
-              <input type="number" id="shipping_weight" min="0" step="1" placeholder="pl. 2100" />
-              <span class="form-hint">Opcionális</span>
-            </div>
-
-            <div class="form-group">
               <label>Megjegyzés:</label>
               <textarea id="shipping_notes" rows="2" placeholder="pl. Első részszállítás"></textarea>
             </div>
@@ -772,7 +767,6 @@ class CfmManagerCard extends HTMLElement {
     const formData = {
       date: this.shadowRoot.getElementById('shipping_date').value,
       shipping_count: parseInt(this.shadowRoot.getElementById('shipping_count').value),
-      average_weight: parseFloat(this.shadowRoot.getElementById('shipping_weight').value) || null,
       notes: this.shadowRoot.getElementById('shipping_notes').value || null
     };
 
