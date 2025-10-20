@@ -1,7 +1,7 @@
 /**
  * CFM Manager Card - Main Class
  *
- * Version: v2.5.3
+ * Version: v2.6.0
  * State Machine: PRE-START → ACTIVE CYCLE → CLOSED
  * Phase 2: Cycle Start Form (COMPLETED)
  * Phase 3: ACTIVE CYCLE Modals (Shipping, Mortality, Close)
@@ -9,6 +9,7 @@
  *
  * HOTFIX v2.5.2: Infinite render loop fixed (hass setter optimization)
  * v2.5.3: Shipping modal - átlagsúly mező eltávolítva
+ * v2.6.0: Interactive Demo Mode - State transitions via button clicks
  */
 
 class CfmManagerCard extends HTMLElement {
@@ -18,6 +19,7 @@ class CfmManagerCard extends HTMLElement {
     this._config = {};
     this._hass = null;
     this._currentState = 'UNKNOWN';
+    this._demoCurrentState = 'PRE-START';  // Demo mode internal state
     this._showStartForm = false;
     this._showShippingModal = false;
     this._showMortalityModal = false;
@@ -75,11 +77,11 @@ class CfmManagerCard extends HTMLElement {
    * @returns {string} - Current state (PRE-START, ACTIVE, CLOSED, UNKNOWN)
    */
   _updateState() {
-    // DEMO MODE: Force state if demo_state is set
-    if (this._config.demo_state) {
-      this._currentState = this._config.demo_state;
+    // DEMO MODE: Use internal state (changes via button clicks)
+    if (this._config.demo_state !== undefined) {
+      this._currentState = this._demoCurrentState;
       if (this._config.show_debug) {
-        console.log(`[CFM Card] DEMO MODE: Forced state = ${this._currentState}`);
+        console.log(`[CFM Card] DEMO MODE: Current state = ${this._currentState}`);
       }
       return;
     }
@@ -475,8 +477,8 @@ class CfmManagerCard extends HTMLElement {
         </div>
 
         <div class="action-buttons">
-          <button class="primary-button" onclick="this.getRootNode().host._handleStartCycle()">
-            🐔 ÚJ CIKLUS INDÍTÁS
+          <button class="primary-button" onclick="this.getRootNode().host._demoResetCycle()">
+            🔄 BETÁRÁS
           </button>
         </div>
       </div>
@@ -519,6 +521,12 @@ class CfmManagerCard extends HTMLElement {
    */
   async _submitStartForm() {
     if (!this.shadowRoot) return;
+
+    // DEMO MODE: Just transition to ACTIVE state
+    if (this._config.demo_state !== undefined) {
+      this._demoStartCycle();
+      return;
+    }
 
     const form = this.shadowRoot.getElementById('cycleStartForm');
     if (!form) return;
@@ -841,6 +849,12 @@ class CfmManagerCard extends HTMLElement {
    */
   async _submitCloseCycle() {
     if (!this.shadowRoot) return;
+
+    // DEMO MODE: Just transition to CLOSED state
+    if (this._config.demo_state !== undefined) {
+      this._demoCloseCycle();
+      return;
+    }
 
     const managerId = this._config.manager_id;
     const cycleId = this._getSensorValue(`sensor.manager_${managerId}_current_cycle_id`);
@@ -1301,6 +1315,47 @@ class CfmManagerCard extends HTMLElement {
       case 'PRE-START':
       default:
         return 3;  // Small card for waiting state
+    }
+  }
+
+  /**
+   * DEMO MODE: Transition from PRE-START → ACTIVE
+   */
+  _demoStartCycle() {
+    if (this._config.demo_state !== undefined) {
+      this._demoCurrentState = 'ACTIVE';
+      this._showStartForm = false;  // Close form if open
+      this._render();
+      if (this._config.show_debug) {
+        console.log('[CFM Card] DEMO: Cycle started → ACTIVE state');
+      }
+    }
+  }
+
+  /**
+   * DEMO MODE: Transition from ACTIVE → CLOSED
+   */
+  _demoCloseCycle() {
+    if (this._config.demo_state !== undefined) {
+      this._demoCurrentState = 'CLOSED';
+      this._showCloseConfirm = false;  // Close confirm dialog
+      this._render();
+      if (this._config.show_debug) {
+        console.log('[CFM Card] DEMO: Cycle closed → CLOSED state');
+      }
+    }
+  }
+
+  /**
+   * DEMO MODE: Transition from CLOSED → PRE-START (Betárás)
+   */
+  _demoResetCycle() {
+    if (this._config.demo_state !== undefined) {
+      this._demoCurrentState = 'PRE-START';
+      this._render();
+      if (this._config.show_debug) {
+        console.log('[CFM Card] DEMO: Cycle reset (Betárás) → PRE-START state');
+      }
     }
   }
 }

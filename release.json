@@ -1,23 +1,24 @@
 {
-  "version": "2.5.3",
+  "version": "2.6.0",
   "release_date": "2025-10-20",
   "changelog": {
     "features": [
-      "DEMO MODE - Card működik szenzorok nélkül is!",
-      "demo_state config paraméter (PRE-START, ACTIVE, CLOSED)",
-      "Dummy adatok megjelenítése demo mode-ban",
-      "UI tesztelés lehetséges backend nélkül",
-      "3 állapot kipróbálható azonnal (telepítés után)"
+      "INTERACTIVE DEMO MODE - Állapotváltások gombnyomásra!",
+      "PRE-START → ACTIVE → CLOSED → PRE-START folyamat",
+      "Ciklus Indítás gomb → ACTIVE állapot",
+      "Ciklus Lezárás gomb → CLOSED állapot",
+      "BETÁRÁS gomb (CLOSED-ban) → PRE-START állapot",
+      "Belső state management (_demoCurrentState)",
+      "Demo mode-ban NEM hív backend API-t"
     ],
     "fixes": [
       "Shipping modal egyszerűsítés - átlagsúly mező eltávolítva",
-      "HOTFIX: Végtelen render loop javítva (villogó gombok)",
-      "hass setter optimalizálás - csak változás esetén renderel",
-      "dist/ mappa tisztítás - verziózott fájlok eltávolítva"
+      "Végtelen render loop javítva (villogó gombok)",
+      "hass setter optimalizálás"
     ],
     "breaking_changes": []
   },
   "minimum_ha_version": "2024.1.0",
-  "phase": "Phase 4: DEMO MODE (COMPLETED)",
+  "phase": "Phase 4: INTERACTIVE DEMO MODE (COMPLETED)",
   "next_phase": "Phase 5: Config Editor Bővítés (Entity Pickers)"
 }
