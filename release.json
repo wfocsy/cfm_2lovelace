@@ -1,5 +1,5 @@
 {
-  "version": "2.5.1",
+  "version": "2.5.2",
   "release_date": "2025-10-20",
   "changelog": {
     "features": [
@@ -10,9 +10,10 @@
       "3 állapot kipróbálható azonnal (telepítés után)"
     ],
     "fixes": [
+      "HOTFIX: Végtelen render loop javítva (villogó gombok)",
+      "hass setter optimalizálás - csak változás esetén renderel",
       "dist/ mappa tisztítás - verziózott fájlok eltávolítva",
-      "HACS cache probléma javítása",
-      "Csak 1 fő fájl: cfm-manager-card.js"
+      "HACS cache probléma javítása"
     ],
     "breaking_changes": []
   },

@@ -1,11 +1,13 @@
 /**
  * CFM Manager Card - Main Class
  *
- * Version: v2.5.0
+ * Version: v2.5.2
  * State Machine: PRE-START → ACTIVE CYCLE → CLOSED
  * Phase 2: Cycle Start Form (COMPLETED)
  * Phase 3: ACTIVE CYCLE Modals (Shipping, Mortality, Close)
  * Phase 4: DEMO MODE - Display UI without sensors
+ *
+ * HOTFIX v2.5.2: Infinite render loop fixed (hass setter optimization)
  */
 
 class CfmManagerCard extends HTMLElement {
@@ -47,9 +49,24 @@ class CfmManagerCard extends HTMLElement {
    * @param {Object} hass - Home Assistant object
    */
   set hass(hass) {
+    const oldHass = this._hass;
     this._hass = hass;
-    this._updateState();
-    this._render();
+
+    // Only update if this is the first render or state changed
+    if (!oldHass) {
+      // First render
+      this._updateState();
+      this._render();
+    } else {
+      // Check if relevant entities changed
+      const oldState = this._currentState;
+      this._updateState();
+
+      // Only re-render if state actually changed
+      if (oldState !== this._currentState) {
+        this._render();
+      }
+    }
   }
 
   /**
