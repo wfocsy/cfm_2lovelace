@@ -1,7 +1,7 @@
 /**
  * CFM Manager Card - Main Class
  *
- * Version: v2.6.0
+ * Version: v2.6.1
  * State Machine: PRE-START → ACTIVE CYCLE → CLOSED
  * Phase 2: Cycle Start Form (COMPLETED)
  * Phase 3: ACTIVE CYCLE Modals (Shipping, Mortality, Close)
@@ -478,7 +478,7 @@ class CfmManagerCard extends HTMLElement {
 
         <div class="action-buttons">
           <button class="primary-button" onclick="this.getRootNode().host._demoResetCycle()">
-            🔄 BETÁRÁS
+            🔄 BEZÁRÁS
           </button>
         </div>
       </div>

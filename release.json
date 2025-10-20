@@ -1,20 +1,18 @@
 {
-  "version": "2.6.0",
+  "version": "2.6.1",
   "release_date": "2025-10-20",
   "changelog": {
     "features": [
-      "INTERACTIVE DEMO MODE - Állapotváltások gombnyomásra!",
-      "PRE-START → ACTIVE → CLOSED → PRE-START folyamat",
-      "Ciklus Indítás gomb → ACTIVE állapot",
-      "Ciklus Lezárás gomb → CLOSED állapot",
-      "BETÁRÁS gomb (CLOSED-ban) → PRE-START állapot",
-      "Belső state management (_demoCurrentState)",
-      "Demo mode-ban NEM hív backend API-t"
+      "ÚJ KÁRTYA: cfm-mortality-card.js - Elhullás Rögzítés",
+      "Mindig látható kártya, csak ACTIVE ciklusnál enabled",
+      "Cycle ID és Terület név megjelenítés",
+      "Ma rögzített elhullás számláló",
+      "Dátum (readonly, mai nap)",
+      "Darabszám input (disabled ha nem ACTIVE)",
+      "Rögzít gomb (enabled csak ACTIVE állapotban)"
     ],
     "fixes": [
-      "Shipping modal egyszerűsítés - átlagsúly mező eltávolítva",
-      "Végtelen render loop javítva (villogó gombok)",
-      "hass setter optimalizálás"
+      "Gomb név javítás: 'BETÁRÁS' → 'BEZÁRÁS' (CLOSED állapot)"
     ],
     "breaking_changes": []
   },
