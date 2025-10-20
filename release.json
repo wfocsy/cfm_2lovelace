@@ -1,18 +1,17 @@
 {
-  "version": "2.6.1",
+  "version": "2.6.2",
   "release_date": "2025-10-20",
   "changelog": {
     "features": [
       "ÚJ KÁRTYA: cfm-mortality-card.js - Elhullás Rögzítés",
       "Mindig látható kártya, csak ACTIVE ciklusnál enabled",
       "Cycle ID és Terület név megjelenítés",
-      "Ma rögzített elhullás számláló",
-      "Dátum (readonly, mai nap)",
-      "Darabszám input (disabled ha nem ACTIVE)",
-      "Rögzít gomb (enabled csak ACTIVE állapotban)"
+      "Ma rögzített elhullás számláló"
     ],
     "fixes": [
-      "Gomb név javítás: 'BETÁRÁS' → 'BEZÁRÁS' (CLOSED állapot)"
+      "KRITIKUS FIX: GitHub Actions - mortality-card.js csatolása release-hez",
+      "HACS most már letölti mindkét fájlt (manager + mortality)",
+      "Gomb név: 'BETÁRÁS' → 'BEZÁRÁS'"
     ],
     "breaking_changes": []
   },
