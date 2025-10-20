@@ -1,0 +1,7 @@
+{
+  "name": "CFM Manager Card",
+  "content_in_root": true,
+  "filename": "cfm-manager-card.js",
+  "render_readme": true,
+  "homeassistant": "2024.1.0"
+}
