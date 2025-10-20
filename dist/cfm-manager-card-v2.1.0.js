@@ -1,10 +1,9 @@
 /**
  * CFM Manager Card - Main Class
  *
- * Version: v2.2.0
+ * Version: v2.1.0
  * State Machine: PRE-START → ACTIVE CYCLE → CLOSED
- * Phase 2: Cycle Start Form (COMPLETED)
- * Phase 3: ACTIVE CYCLE Modals (Shipping, Mortality, Close)
+ * Phase 2: Cycle Start Form Implementation
  */
 
 class CfmManagerCard extends HTMLElement {
@@ -15,9 +14,6 @@ class CfmManagerCard extends HTMLElement {
     this._hass = null;
     this._currentState = 'UNKNOWN';
     this._showStartForm = false;
-    this._showShippingModal = false;
-    this._showMortalityModal = false;
-    this._showCloseConfirm = false;
     this._formData = {};
   }
 
@@ -300,19 +296,6 @@ class CfmManagerCard extends HTMLElement {
     const mortalityRate = this._getSensorValue(`sensor.manager_${managerId}_mortality_rate`);
     const breed = this._getSensorAttribute(`sensor.manager_${managerId}_cycle_status`, 'breed');
 
-    // Check if modal is open
-    if (this._showShippingModal) {
-      return this._renderShippingModal(managerName, cycleId, currentStock);
-    }
-
-    if (this._showMortalityModal) {
-      return this._renderMortalityModal(managerName, cycleId);
-    }
-
-    if (this._showCloseConfirm) {
-      return this._renderCloseConfirm(managerName, cycleId, currentStock);
-    }
-
     return `
       <div class="card-content active-cycle">
         <div class="header">
@@ -556,275 +539,19 @@ class CfmManagerCard extends HTMLElement {
     console.log(`[CFM Card] ${type.toUpperCase()}: ${message}`);
   }
 
-  /**
-   * Toggle Shipping Modal
-   */
   _handleShipping() {
-    this._showShippingModal = !this._showShippingModal;
-    this._render();
+    console.log('[CFM Card] Shipping clicked - TODO: Implement modal');
+    // TODO: Show shipping modal (Phase 3)
   }
 
-  /**
-   * Toggle Mortality Modal
-   */
   _handleMortality() {
-    this._showMortalityModal = !this._showMortalityModal;
-    this._render();
+    console.log('[CFM Card] Mortality clicked - TODO: Implement modal');
+    // TODO: Show mortality modal (Phase 3)
   }
 
-  /**
-   * Toggle Close Cycle Confirmation
-   */
   _handleCloseCycle() {
-    this._showCloseConfirm = !this._showCloseConfirm;
-    this._render();
-  }
-
-  /**
-   * Render Shipping Modal (Phase 3)
-   */
-  _renderShippingModal(managerName, cycleId, currentStock) {
-    const today = new Date().toISOString().split('T')[0];
-
-    return `
-      <div class="card-content modal-overlay">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2>${managerName}</h2>
-            <h3>🚚 Elszállítás Rögzítése</h3>
-            <p class="modal-subtitle">Ciklus: ${cycleId} | Állomány: ${currentStock} db</p>
-          </div>
-
-          <form id="shippingForm" class="modal-form">
-            <div class="form-group">
-              <label>Dátum: *</label>
-              <input type="date" id="shipping_date" required value="${today}" />
-            </div>
-
-            <div class="form-group">
-              <label>Elszállított darabszám: *</label>
-              <input type="number" id="shipping_count" required min="1" max="${currentStock}" placeholder="pl. 200" />
-              <span class="form-hint">Maximum: ${currentStock} db</span>
-            </div>
-
-            <div class="form-group">
-              <label>Átlagsúly (g):</label>
-              <input type="number" id="shipping_weight" min="0" step="1" placeholder="pl. 2100" />
-              <span class="form-hint">Opcionális</span>
-            </div>
-
-            <div class="form-group">
-              <label>Megjegyzés:</label>
-              <textarea id="shipping_notes" rows="2" placeholder="pl. Első részszállítás"></textarea>
-            </div>
-
-            <div class="modal-actions">
-              <button type="button" class="secondary-button" onclick="this.getRootNode().host._handleShipping()">
-                ❌ Mégsem
-              </button>
-              <button type="submit" class="primary-button" onclick="event.preventDefault(); this.getRootNode().host._submitShipping();">
-                ✅ Rögzítés
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render Mortality Modal (Phase 3)
-   */
-  _renderMortalityModal(managerName, cycleId) {
-    const today = new Date().toISOString().split('T')[0];
-
-    return `
-      <div class="card-content modal-overlay">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2>${managerName}</h2>
-            <h3>💀 Elhullás Rögzítése</h3>
-            <p class="modal-subtitle">Ciklus: ${cycleId}</p>
-          </div>
-
-          <form id="mortalityForm" class="modal-form">
-            <div class="form-group">
-              <label>Dátum: *</label>
-              <input type="date" id="mortality_date" required value="${today}" />
-            </div>
-
-            <div class="form-group">
-              <label>Elhullott darabszám: *</label>
-              <input type="number" id="mortality_count" required min="1" placeholder="pl. 5" />
-            </div>
-
-            <div class="modal-actions">
-              <button type="button" class="secondary-button" onclick="this.getRootNode().host._handleMortality()">
-                ❌ Mégsem
-              </button>
-              <button type="submit" class="primary-button" onclick="event.preventDefault(); this.getRootNode().host._submitMortality();">
-                ✅ Rögzítés
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render Close Cycle Confirmation (Phase 3)
-   */
-  _renderCloseConfirm(managerName, cycleId, currentStock) {
-    return `
-      <div class="card-content modal-overlay">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2>${managerName}</h2>
-            <h3>⚠️ Ciklus Lezárása</h3>
-            <p class="modal-subtitle">Ciklus: ${cycleId}</p>
-          </div>
-
-          <div class="confirm-message">
-            <p><strong>Figyelem!</strong> A ciklus lezárása <strong>végleges</strong> művelet.</p>
-            <p>Jelenlegi állomány: <strong>${currentStock} db</strong></p>
-            <p>Biztosan lezárod a ciklust?</p>
-          </div>
-
-          <form id="closeForm" class="modal-form">
-            <div class="form-group">
-              <label>Lezárás indoka:</label>
-              <textarea id="close_reason" rows="3" placeholder="pl. Normál befejezés, teljes elszállítás"></textarea>
-            </div>
-
-            <div class="modal-actions">
-              <button type="button" class="secondary-button" onclick="this.getRootNode().host._handleCloseCycle()">
-                ❌ Mégsem
-              </button>
-              <button type="submit" class="danger-button" onclick="event.preventDefault(); this.getRootNode().host._submitCloseCycle();">
-                ✅ Ciklus Lezárása
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Submit Shipping Form
-   */
-  async _submitShipping() {
-    if (!this.shadowRoot) return;
-
-    const managerId = this._config.manager_id;
-    const cycleId = this._getSensorValue(`sensor.manager_${managerId}_current_cycle_id`);
-
-    const formData = {
-      date: this.shadowRoot.getElementById('shipping_date').value,
-      shipping_count: parseInt(this.shadowRoot.getElementById('shipping_count').value),
-      average_weight: parseFloat(this.shadowRoot.getElementById('shipping_weight').value) || null,
-      notes: this.shadowRoot.getElementById('shipping_notes').value || null
-    };
-
-    if (!formData.shipping_count || formData.shipping_count < 1) {
-      this._showNotification('Hiba: Darabszám kötelező!', 'error');
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/cycle-management/cycles/${cycleId}/shipping`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        this._showNotification(`Elszállítás rögzítve: ${formData.shipping_count} db`, 'success');
-        this._showShippingModal = false;
-        this._render();
-      } else {
-        this._showNotification(`Hiba: ${result.message}`, 'error');
-      }
-    } catch (error) {
-      this._showNotification(`Hiba: ${error.message}`, 'error');
-    }
-  }
-
-  /**
-   * Submit Mortality Form
-   */
-  async _submitMortality() {
-    if (!this.shadowRoot) return;
-
-    const managerId = this._config.manager_id;
-    const cycleId = this._getSensorValue(`sensor.manager_${managerId}_current_cycle_id`);
-
-    const formData = {
-      date: this.shadowRoot.getElementById('mortality_date').value,
-      mortality_count: parseInt(this.shadowRoot.getElementById('mortality_count').value)
-    };
-
-    if (!formData.mortality_count || formData.mortality_count < 1) {
-      this._showNotification('Hiba: Darabszám kötelező!', 'error');
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/cycle-management/cycles/${cycleId}/mortality`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        this._showNotification(`Elhullás rögzítve: ${formData.mortality_count} db`, 'success');
-        this._showMortalityModal = false;
-        this._render();
-      } else {
-        this._showNotification(`Hiba: ${result.message}`, 'error');
-      }
-    } catch (error) {
-      this._showNotification(`Hiba: ${error.message}`, 'error');
-    }
-  }
-
-  /**
-   * Submit Close Cycle
-   */
-  async _submitCloseCycle() {
-    if (!this.shadowRoot) return;
-
-    const managerId = this._config.manager_id;
-    const cycleId = this._getSensorValue(`sensor.manager_${managerId}_current_cycle_id`);
-
-    const formData = {
-      reason: this.shadowRoot.getElementById('close_reason').value || 'Normál befejezés'
-    };
-
-    try {
-      const response = await fetch(`/api/cycle-management/cycles/${cycleId}/close`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        this._showNotification(`Ciklus lezárva: ${cycleId}`, 'success');
-        this._showCloseConfirm = false;
-        this._render();
-      } else {
-        this._showNotification(`Hiba: ${result.message}`, 'error');
-      }
-    } catch (error) {
-      this._showNotification(`Hiba: ${error.message}`, 'error');
-    }
+    console.log('[CFM Card] Close Cycle clicked - TODO: Implement confirm');
+    // TODO: Show confirmation dialog (Phase 3)
   }
 
   /**
@@ -1108,124 +835,6 @@ class CfmManagerCard extends HTMLElement {
           grid-template-columns: 1fr;
         }
       }
-
-      /* Modal styles (Phase 3) */
-      .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        padding: 16px;
-      }
-
-      .modal-content {
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        max-width: 500px;
-        width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
-        animation: modalFadeIn 0.2s ease-out;
-      }
-
-      @keyframes modalFadeIn {
-        from {
-          opacity: 0;
-          transform: scale(0.9);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
-      }
-
-      .modal-header {
-        padding: 20px;
-        border-bottom: 1px solid #e0e0e0;
-      }
-
-      .modal-header h2 {
-        margin: 0 0 8px 0;
-        font-size: 18px;
-        font-weight: 500;
-        color: #333;
-      }
-
-      .modal-header h3 {
-        margin: 0 0 8px 0;
-        font-size: 20px;
-        font-weight: 600;
-        color: #111;
-      }
-
-      .modal-subtitle {
-        margin: 0;
-        font-size: 14px;
-        color: #666;
-      }
-
-      .modal-form {
-        padding: 20px;
-      }
-
-      .modal-form textarea {
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 14px;
-        font-family: inherit;
-        resize: vertical;
-        width: 100%;
-        box-sizing: border-box;
-      }
-
-      .modal-form textarea:focus {
-        outline: none;
-        border-color: #4CAF50;
-        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
-      }
-
-      .modal-actions {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        margin-top: 20px;
-      }
-
-      .confirm-message {
-        padding: 20px;
-        background-color: #fff3cd;
-        border-left: 4px solid #ff9800;
-        margin: 0 20px;
-      }
-
-      .confirm-message p {
-        margin: 8px 0;
-        font-size: 14px;
-        line-height: 1.6;
-      }
-
-      .confirm-message strong {
-        color: #d32f2f;
-      }
-
-      @media (max-width: 600px) {
-        .modal-content {
-          max-width: 100%;
-          max-height: 95vh;
-        }
-
-        .modal-overlay {
-          padding: 8px;
-        }
-      }
     `;
   }
 
@@ -1245,9 +854,9 @@ class CfmManagerCard extends HTMLElement {
    * Get card size for Lovelace layout
    */
   getCardSize() {
-    // Dynamic size based on state and modal visibility
-    if (this._showStartForm || this._showShippingModal || this._showMortalityModal || this._showCloseConfirm) {
-      return 12;  // Large card for forms/modals
+    // Dynamic size based on state and form visibility
+    if (this._showStartForm) {
+      return 12;  // Large card for form
     }
 
     switch (this._currentState) {
@@ -1274,4 +883,4 @@ window.customCards.push({
   preview: true
 });
 
-console.log('[CFM Card] v2.2.0 - Card Main loaded successfully (Phase 3: ACTIVE Modals)');
+console.log('[CFM Card] v2.1.0 - Card Main loaded successfully (Phase 2: Cycle Start Form)');

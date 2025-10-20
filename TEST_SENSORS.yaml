@@ -1,0 +1,148 @@
+# CFM Manager Card - Test Sensors
+#
+# HASZNÁLAT:
+# 1. Másold ezt a fájlt Home Assistant configuration.yaml-ba
+# 2. Vagy: packages/cfm_test_sensors.yaml (ha packages használsz)
+# 3. Developer Tools → YAML → Check Configuration
+# 4. Settings → System → Restart Home Assistant
+#
+# TESZTELÉS:
+# - Developer Tools → States → Keress rá: sensor.manager_1
+# - Módosítsd az értékeket teszteléshez
+
+# ============================================================
+# MANAGER 1 - TESZT SZENZOROK
+# ============================================================
+
+sensor:
+  # Fő állapot sensor (KÖTELEZŐ!)
+  - platform: template
+    sensors:
+      manager_1_cycle_status:
+        friendly_name: "Manager 1 Cycle Status"
+        value_template: "waiting"  # Módosítható: waiting, active, completed
+        attributes:
+          manager_name: "Istálló 1"
+          area_name: "istallo_1"
+          breed: "Ross 308 vegyesivar"
+
+      # PRE-START állapot (waiting)
+      # Ha value_template: "waiting" → Kártya mutatja a "Ciklus Indítás" gombot
+
+      # ACTIVE állapot szenzorok (active)
+      manager_1_current_cycle_id:
+        friendly_name: "Manager 1 Current Cycle ID"
+        value_template: "MSZ/2025/001"
+
+      manager_1_cycle_day:
+        friendly_name: "Manager 1 Cycle Day"
+        value_template: "15"
+        unit_of_measurement: "nap"
+
+      manager_1_current_stock:
+        friendly_name: "Manager 1 Current Stock"
+        value_template: "4975"
+        unit_of_measurement: "db"
+
+      manager_1_average_weight:
+        friendly_name: "Manager 1 Average Weight"
+        value_template: "2450"
+        unit_of_measurement: "g"
+
+      manager_1_fcr:
+        friendly_name: "Manager 1 FCR"
+        value_template: "1.85"
+
+      manager_1_daily_feed_consumed:
+        friendly_name: "Manager 1 Daily Feed Consumed"
+        value_template: "450"
+        unit_of_measurement: "kg"
+
+      manager_1_total_mortality:
+        friendly_name: "Manager 1 Total Mortality"
+        value_template: "25"
+        unit_of_measurement: "db"
+
+      manager_1_mortality_rate:
+        friendly_name: "Manager 1 Mortality Rate"
+        value_template: "0.5"
+        unit_of_measurement: "%"
+
+      # CLOSED állapot szenzorok (completed)
+      manager_1_last_cycle_id:
+        friendly_name: "Manager 1 Last Cycle ID"
+        value_template: "MSZ/2025/001"
+
+      manager_1_last_cycle_duration:
+        friendly_name: "Manager 1 Last Cycle Duration"
+        value_template: "42"
+        unit_of_measurement: "nap"
+
+      manager_1_last_final_stock:
+        friendly_name: "Manager 1 Last Final Stock"
+        value_template: "4500"
+        unit_of_measurement: "db"
+
+      manager_1_last_final_weight:
+        friendly_name: "Manager 1 Last Final Weight"
+        value_template: "3200"
+        unit_of_measurement: "g"
+
+      manager_1_last_final_fcr:
+        friendly_name: "Manager 1 Last Final FCR"
+        value_template: "1.92"
+
+      manager_1_last_total_shipped:
+        friendly_name: "Manager 1 Last Total Shipped"
+        value_template: "4500"
+        unit_of_measurement: "db"
+
+      manager_1_last_total_mortality:
+        friendly_name: "Manager 1 Last Total Mortality"
+        value_template: "500"
+        unit_of_measurement: "db"
+
+      manager_1_last_mortality_rate:
+        friendly_name: "Manager 1 Last Mortality Rate"
+        value_template: "10"
+        unit_of_measurement: "%"
+
+# ============================================================
+# MANAGER 2 - OPCIONÁLIS (ha több kártyát akarsz tesztelni)
+# ============================================================
+
+#  - platform: template
+#    sensors:
+#      manager_2_cycle_status:
+#        friendly_name: "Manager 2 Cycle Status"
+#        value_template: "active"
+#        attributes:
+#          manager_name: "Istálló 2"
+#          area_name: "istallo_2"
+#          breed: "Cobb 500"
+#
+#      manager_2_current_cycle_id:
+#        value_template: "MSZ/2025/002"
+#      # ... stb. (másold a manager_1 szenzorait)
+
+# ============================================================
+# ÁLLAPOT VÁLTÁS TESZTELÉSHEZ
+# ============================================================
+
+# Developer Tools → States → sensor.manager_1_cycle_status → Set State
+
+# PRE-START tesztelés:
+# State: waiting
+# Elvárt: "Ciklus Indítás" gomb megjelenik
+
+# ACTIVE tesztelés:
+# State: active
+# Elvárt: Dashboard napi adatokkal + 3 gomb (Shipping, Mortality, Lezárás)
+
+# CLOSED tesztelés:
+# State: completed
+# Elvárt: Összefoglaló + "Új Ciklus Indítás" gomb
+
+# UNKNOWN tesztelés:
+# Töröld a sensort átmenetileg
+# Elvárt: Piros hibaüzenet

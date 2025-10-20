@@ -1,0 +1,22 @@
+{
+  "version": "2.2.0",
+  "release_date": "2025-10-20",
+  "changelog": {
+    "features": [
+      "Phase 3: ACTIVE CYCLE Modals (Shipping, Mortality, Close)",
+      "Shipping modal - Elszállítás rögzítés (darabszám, átlagsúly, megjegyzés)",
+      "Mortality modal - Elhullás rögzítés (darabszám, dátum)",
+      "Close Cycle confirmation - Ciklus lezárás megerősítő (indok)",
+      "Backend API integration (POST /api/cycle-management/cycles/{id}/shipping|mortality|close)",
+      "Modal overlay with fade-in animation",
+      "Form validation (required fields, max values)",
+      "Modal styles (fixed overlay, responsive, textarea support)",
+      "Auto state refresh after submit"
+    ],
+    "fixes": [],
+    "breaking_changes": []
+  },
+  "minimum_ha_version": "2024.1.0",
+  "phase": "Phase 3: ACTIVE CYCLE Modals (COMPLETED)",
+  "next_phase": "Phase 4: Automatic Scheduler (Daily Data 07:00)"
+}

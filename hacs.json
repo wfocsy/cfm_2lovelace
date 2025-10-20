@@ -1,7 +1,9 @@
 {
   "name": "CFM Manager Card",
-  "content_in_root": true,
+  "content_in_root": false,
   "filename": "cfm-manager-card.js",
   "render_readme": true,
-  "homeassistant": "2024.1.0"
+  "homeassistant": "2024.1.0",
+  "zip_release": false,
+  "hide_default_branch": false
 }
