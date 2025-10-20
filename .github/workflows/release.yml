@@ -1,0 +1,61 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Read release.json
+        id: release_info
+        run: |
+          VERSION=$(jq -r '.version' release.json)
+          CHANGELOG=$(jq -r '.changelog.features | join("\n- ")' release.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: v${{ steps.release_info.outputs.version }}
+          body: |
+            ## 🎉 CFM Manager Card v${{ steps.release_info.outputs.version }}
+
+            ### ✨ Új funkciók:
+            - ${{ steps.release_info.outputs.changelog }}
+
+            ### 📦 Telepítés HACS-ből:
+            1. HACS → Frontend → CFM Manager Card
+            2. Frissítés (ha már telepítve)
+            3. Hard refresh böngészőben (Ctrl+Shift+R)
+
+            ### 🔗 Dokumentáció:
+            - [README.md](https://github.com/${{ github.repository }}/blob/main/README.md)
+            - [CARD_ARCHITECTURE.md](https://github.com/${{ github.repository }}/blob/main/CARD_ARCHITECTURE.md)
+
+            ---
+            🤖 Generated with Claude Code
+          draft: false
+          prerelease: false
+          files: |
+            dist/cfm-manager-card.js
+            release.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
