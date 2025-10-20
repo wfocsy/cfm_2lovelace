@@ -1,5 +1,5 @@
 {
-  "version": "2.5.0",
+  "version": "2.5.1",
   "release_date": "2025-10-20",
   "changelog": {
     "features": [
@@ -9,7 +9,11 @@
       "UI tesztelés lehetséges backend nélkül",
       "3 állapot kipróbálható azonnal (telepítés után)"
     ],
-    "fixes": [],
+    "fixes": [
+      "dist/ mappa tisztítás - verziózott fájlok eltávolítva",
+      "HACS cache probléma javítása",
+      "Csak 1 fő fájl: cfm-manager-card.js"
+    ],
     "breaking_changes": []
   },
   "minimum_ha_version": "2024.1.0",
